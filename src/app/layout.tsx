@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+// import Aurora from "@/components/Background";
+import { Navbar } from "@/components/ui/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +25,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative flex flex-col items-center justify-center overflow-x-hidden`}
       >
-        {children}
+        {/* <div className="fixed inset-0 z-0">
+          <Aurora />
+        </div> */}
+        <Navbar />
+        <div className="relative z-10 w-full max-w-screen-2xl mx-auto overflow-visible">
+          {children}
+        </div>
       </body>
     </html>
   );
