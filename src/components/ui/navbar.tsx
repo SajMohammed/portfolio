@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
+  { name: "About", href: "#about" },
   { name: "Stacks", href: "#stacks" },
   { name: "Work", href: "#work" },
   { name: "Blog", href: "#blog" },
@@ -56,15 +57,15 @@ export function Navbar() {
     
     return {
       container: {
-        padding: `${6 + (1 - scrollProgress) * 2}px ${8 * (1 - scrollProgress)}px`,
-        maxWidth: `calc(100% - ${scrollProgress * 16}px)`,
-        marginLeft: `${scrollProgress * 8}px`,
-        marginRight: `${scrollProgress * 8}px`,
+        padding: `${4 + (1 - scrollProgress) * 1.5}px ${3 + 6 * (1 - scrollProgress)}px`, // Reduced padding
+        maxWidth: `calc(100% - ${scrollProgress * 12}px)`, // Reduced side margins
+        marginLeft: `${scrollProgress * 6}px`,
+        marginRight: `${scrollProgress * 6}px`,
         marginTop: '0.1rem',
         marginBottom: '0',
       },
       navbar: {
-        maxWidth: scrollProgress < 0.5 ? '100%' : '42rem', // Increased width for more space
+        maxWidth: scrollProgress < 0.5 ? '100%' : '44rem', // Reduced from 48rem to 44rem
         marginLeft: scrollProgress < 0.5 ? '0' : 'auto',
         marginRight: scrollProgress < 0.5 ? '0' : 'auto',
         marginTop: '0',
@@ -84,16 +85,16 @@ export function Navbar() {
         transition: 'all 0.4s ease',
       },
       logo: {
-        fontSize: `${1.5 - scrollProgress * 0.25}rem`,
-        transform: `translateX(${scrollProgress * 40}%)`, // Reduced movement
-        marginRight: `${scrollProgress * 2}rem`, // Add margin as it moves center
+        fontSize: `${1.3 - scrollProgress * 0.2}rem`, // Reduced base font size from 1.5 to 1.3
+        transform: `translateX(${scrollProgress * 25}%)`, // Reduced from 30% to 25%
+        marginRight: `${scrollProgress * 1}rem`, // Reduced from 1.5rem to 1rem
       },
       menuContainer: {
-        transform: `translateX(${-scrollProgress * 40}%)`, // Reduced movement
-        marginLeft: `${scrollProgress * 2}rem`, // Add margin as it moves center
+        transform: `translateX(${-scrollProgress * 25}%)`, // Reduced from -30% to -25%
+        marginLeft: `${scrollProgress * 1}rem`, // Reduced from 1.5rem to 1rem
       },
       menuGap: {
-        gap: `${0.25 + scrollProgress * 0.5}rem`, // Increase gap as it centers
+        gap: `${0.3 + scrollProgress * 0.6}rem`, // Reduced base gap from 0.5 to 0.3
       },
       gradientOpacity: {
         opacity: scrollProgress * 0.8, // Gradient only appears when scrolling
@@ -131,7 +132,7 @@ export function Navbar() {
           </div>
           
           {/* Content container */}
-          <div className="relative z-10 flex items-center justify-between w-full px-6 py-3 transition-all duration-500">
+          <div className="relative z-10 flex items-center justify-between w-full px-3 md:px-4 py-1.5 md:py-2 transition-all duration-500">
             <div className="transition-all duration-500" 
                 style={{ 
                   transform: dynamicStyles.logo.transform,
@@ -159,7 +160,7 @@ export function Navbar() {
                     <a 
                       href={item.href}
                       className={cn(
-                        "relative px-3 py-2 text-sm md:text-base font-medium transition-colors duration-300",
+                        "relative px-1 md:px-2 py-1 text-xs sm:text-sm font-medium transition-colors duration-300", // Reduced padding and text size
                         item.href === activeSection 
                           ? "text-white" 
                           : "text-white/70 hover:text-white",
@@ -172,7 +173,7 @@ export function Navbar() {
                       {item.name}
                       <span 
                         className={cn(
-                          "absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/80 to-transparent transition-transform duration-300",
+                          "absolute bottom-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-white/80 to-transparent transition-transform duration-300", // Reduced height from 2px to 1.5px
                           item.href === activeSection || item.href === hoverItem
                             ? "scale-x-100"
                             : "scale-x-0"

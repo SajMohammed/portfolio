@@ -1,36 +1,39 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { TextColor } from "@/components/ui/text-color";
 
 export default function WorkSection() {
+  // Mock project data
   const projects = [
     {
-      title: "Portfolio Website",
-      description: "Modern portfolio with 3D elements and interactive animations",
-      tags: ["Next.js", "Three.js", "Tailwind CSS"],
-      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    },
-    {
       title: "E-commerce Platform",
-      description: "Full-featured online store with payment processing",
-      tags: ["React", "Node.js", "MongoDB", "Stripe"],
-      imageUrl: "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      description: "A full-featured online shopping platform with cart, payments, and admin panel.",
+      imageUrl: "https://source.unsplash.com/random/800x600/?ecommerce",
+      tags: ["Next.js", "MongoDB", "Tailwind CSS", "Stripe"]
     },
     {
-      title: "AI Dashboard",
-      description: "Data visualization dashboard for AI model performance",
-      tags: ["TypeScript", "D3.js", "Python", "Flask"],
-      imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      title: "Finance Dashboard",
+      description: "Interactive dashboard for tracking investments and financial metrics.",
+      imageUrl: "https://source.unsplash.com/random/800x600/?finance",
+      tags: ["React", "D3.js", "Firebase", "MaterialUI"]
     },
+    {
+      title: "Social Media App",
+      description: "A mobile-first social platform with real-time messaging and content sharing.",
+      imageUrl: "https://source.unsplash.com/random/800x600/?social",
+      tags: ["React Native", "Socket.io", "Node.js", "AWS"]
+    }
   ];
 
   return (
-    <div className="h-full flex items-center justify-center p-8">
-      <div className="max-w-6xl w-full">
+    <div className="w-full flex items-center justify-center">
+      <div className="max-w-7xl w-full mx-auto px-4 md:px-8 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-600 mb-4">
-            My Work
-          </h2>
+          <TextColor 
+            firstLine="Curated Works."
+            className="mb-6 flex justify-center"
+          />
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
             Check out some of my recent projects
           </p>

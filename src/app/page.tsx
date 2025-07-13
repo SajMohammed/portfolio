@@ -1,4 +1,5 @@
 import HeroSection from "@/components/sections/HeroSection";
+import AboutSection from "@/components/sections/AboutSection";
 import StacksSection from "@/components/sections/StacksSection";
 import WorkSection from "@/components/sections/WorkSection";
 import BlogSection from "@/components/sections/BlogSection";
@@ -10,17 +11,20 @@ export default function Home() {
       <section id="hero" className="h-screen w-full overflow-visible">
         <HeroSection />
       </section>
+      <section id="about" className="min-h-screen w-full mt-60 md:mt-48 pt-20">
+        <AboutSection />
+      </section>
       {/* Added mt-32 for mobile and mt-48 for medium screens to create more space */}
-      <section id="stacks" className="min-h-screen w-full max-w-7xl mx-auto px-4 mt-32 md:mt-48">
+      <section id="stacks" className="min-h-screen w-full mt-32 md:mt-48">
         <StacksSection />
       </section>
-      <section id="work" className="min-h-screen w-full max-w-7xl mx-auto px-4">
+      <section id="work" className="min-h-screen w-full">
         <WorkSection />
       </section>
-      <section id="blog" className="min-h-screen w-full max-w-7xl mx-auto px-4">
+      <section id="blog" className="min-h-screen w-full">
         <BlogSection />
       </section>
-      <section id="contact" className="min-h-screen w-full max-w-7xl mx-auto px-4">
+      <section id="contact" className="min-h-screen w-full">
         <ContactSection />
       </section>
     </main>
