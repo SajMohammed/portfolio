@@ -721,16 +721,24 @@ const MagicBento: React.FC<BentoProps> = ({
           .icon-container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(4px);
-            padding: 0.375rem;
+            padding: 0.5rem;
             border-radius: 0.5rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
           
           .icon-container:hover {
             background: rgba(255, 255, 255, 0.15);
             border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px) scale(1.05);
+          }
+          
+          .icon-fallback {
+            border-radius: 2px;
+            font-size: 8px;
           }
           
           .skill-item {
@@ -824,10 +832,13 @@ const MagicBento: React.FC<BentoProps> = ({
                           <img
                             src={icon.url}
                             alt={icon.name}
-                            className="w-4 h-4 object-contain"
+                            className="w-6 h-6 object-contain"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.style.display = "none";
+                              // Instead of hiding, show a placeholder or fallback
+                              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(icon.name)}&background=random&color=fff&size=24`;
+                              // Add a class to show it's a fallback
+                              target.classList.add("icon-fallback");
                             }}
                           />
                         </div>

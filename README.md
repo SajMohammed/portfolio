@@ -20,6 +20,22 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Email Configuration
+
+To enable the contact form functionality:
+
+1. Create a `.env.local` file in the root directory
+2. Add the following variables:
+   ```
+   EMAIL_USER=your.gmail@gmail.com
+   EMAIL_PASSWORD=your-app-password
+   ```
+3. For Gmail users, you'll need to create an App Password:
+   - Go to your Google Account > Security
+   - Enable 2-Step Verification if not already enabled
+   - Create an App Password (under "Signing in to Google")
+   - Use this generated password in your `.env.local` file
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
@@ -34,3 +50,5 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+When deploying to Vercel or any other platform, make sure to add the environment variables in your deployment settings.
