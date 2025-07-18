@@ -6,6 +6,8 @@ import { TextColor } from "@/components/ui/text-color";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
+const isDev = process.env.NODE_ENV === 'development';
+
 export default function HeroSection() {
   const [isClient, setIsClient] = useState(false);
   const [textIndex, setTextIndex] = useState(0);
@@ -30,7 +32,7 @@ export default function HeroSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.3,
+        staggerChildren: isDev ? 0 : 0.3,
       }
     }
   };
@@ -41,7 +43,7 @@ export default function HeroSection() {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
+        duration: isDev ? 0 : 0.6,
         ease: "easeInOut"
       }
     }
@@ -49,8 +51,20 @@ export default function HeroSection() {
 
   const textAnimationVariants: Variants = {
     initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: isDev ? 0 : 0.5
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -10,
+      transition: {
+        duration: isDev ? 0 : 0.3
+      }
+    }
   };
 
   return (
@@ -58,7 +72,7 @@ export default function HeroSection() {
       {/* Text container on the left */}
       <motion.div 
         className="w-full mt-60 md:w-2/5 z-20 py-12 flex flex-col items-start justify-center"
-        initial="hidden"
+        initial={isDev ? "visible" : "hidden"}
         animate="visible"
         variants={containerVariants}
       >

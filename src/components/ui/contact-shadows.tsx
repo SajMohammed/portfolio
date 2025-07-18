@@ -266,22 +266,33 @@ function Scene() {
     blurPlane.visible = false;
   };
 
-  // Animation loop
+  // Animation loop with frame throttling
+  const frameCount = useRef(0);
+  const isDev = process.env.NODE_ENV === 'development';
+  
   useFrame((state, delta) => {
     if (!meshesRef.current.length || !shadowCameraRef.current || !renderTargetRef.current || 
         !depthMaterialRef.current || !cameraHelperRef.current) {
       return;
     }
     
+    // Throttle frames in development
+    if (isDev) {
+      frameCount.current++;
+      if (frameCount.current % 3 !== 0) return;
+    }
+    
     // Slowly rotate the whole scene group
     if (sceneGroupRef.current) {
-      sceneGroupRef.current.rotation.y += delta * 0.05; // Reduced from 0.1 for slower rotation
+      const speed = isDev ? 0.02 : 0.05;
+      sceneGroupRef.current.rotation.y += delta * speed;
     }
 
     // Animate individual meshes with slower rotation
+    const rotSpeed = isDev ? 0.002 : 0.005;
     meshesRef.current.forEach(mesh => {
-      mesh.rotation.x += 0.005; // Reduced from 0.01
-      mesh.rotation.y += 0.008; // Reduced from 0.02
+      mesh.rotation.x += rotSpeed;
+      mesh.rotation.y += rotSpeed * 1.6;
     });
 
     // Shadow rendering process
@@ -328,9 +339,20 @@ function Scene() {
 }
 
 export function ContactShadows() {
+  const isDev = process.env.NODE_ENV === 'development';
+  
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <Canvas camera={{ position: [0.7, 1.2, 2.5], fov: 42 }}>  {/* Increased camera distance, reduced FOV */}
+      <Canvas 
+        camera={{ position: [0.7, 1.2, 2.5], fov: 42 }}
+        gl={{ 
+          antialias: !isDev,
+          alpha: true,
+          powerPreference: 'high-performance'
+        }}
+        dpr={isDev ? 1 : undefined}
+        frameloop={isDev ? 'demand' : 'always'}
+      >
         <color attach="background" args={['black']} />
         <Scene />
       </Canvas>

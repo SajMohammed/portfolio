@@ -14,11 +14,20 @@ interface BoxProps {
 // Simple mesh with animation
 function Box(props: BoxProps) {
   const meshRef = useRef<Mesh>(null);
+  const frameCount = useRef(0);
+  const isDev = process.env.NODE_ENV === 'development';
   
   useFrame((state, delta) => {
+    // Throttle animation in development
+    if (isDev) {
+      frameCount.current++;
+      if (frameCount.current % 2 !== 0) return;
+    }
+    
     if (meshRef.current) {
-      meshRef.current.rotation.x += delta * 0.5;
-      meshRef.current.rotation.y += delta * 0.7;
+      const speed = isDev ? 0.2 : 0.5;
+      meshRef.current.rotation.x += delta * speed;
+      meshRef.current.rotation.y += delta * (speed * 1.4);
     }
   });
   
@@ -47,9 +56,20 @@ function Scene() {
 }
 
 export function SimpleScene() {
+  const isDev = process.env.NODE_ENV === 'development';
+  
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+      <Canvas 
+        camera={{ position: [0, 0, 5], fov: 45 }}
+        gl={{ 
+          antialias: !isDev,
+          alpha: true,
+          powerPreference: 'high-performance'
+        }}
+        dpr={isDev ? 1 : undefined}
+        frameloop={isDev ? 'demand' : 'always'}
+      >
         <Scene />
       </Canvas>
     </div>

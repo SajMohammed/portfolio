@@ -1,6 +1,27 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { gsap } from "gsap";
 
+const isDev = process.env.NODE_ENV === 'development';
+
+// Animation wrapper for dev optimization
+const animateWithGsap = (element: any, props: any) => {
+  if (isDev) {
+    // In development, apply final state immediately
+    if (props.onComplete) props.onComplete();
+    return { kill: () => {} };
+  }
+  return gsap.to(element, props);
+};
+
+const animateFromToWithGsap = (element: any, fromProps: any, toProps: any) => {
+  if (isDev) {
+    // In development, apply final state immediately
+    if (toProps.onComplete) toProps.onComplete();
+    return { kill: () => {} };
+  }
+  return gsap.fromTo(element, fromProps, toProps);
+};
+
 export interface SkillInfo {
   name: string;
   description: string;
