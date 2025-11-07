@@ -1,7 +1,6 @@
 "use client";
 
-import { SplineSceneBasic } from "@/components/ui/demo";
-import { ThreeScene } from "@/components/ui/three-scene";
+import { GridScan } from "@/components/ui/grid-scan";
 import { TextColor } from "@/components/ui/text-color";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -68,10 +67,28 @@ export default function HeroSection() {
   };
 
   return (
-    <div className="h-full w-full max-w-7xl mx-auto px-4 md:px-8 relative flex flex-col md:flex-row items-center overflow-visible">
-      {/* Text container on the left */}
+    <div className="h-full w-full max-w-7xl mx-auto px-4 md:px-8 relative flex items-center justify-center">
+      {/* GridScan background - full viewport */}
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 w-screen h-screen z-0">
+        <GridScan
+          sensitivity={0.55}
+          lineThickness={1}
+          linesColor="#392e4e"
+          gridScale={0.1}
+          scanColor="#9c40ff"
+          scanOpacity={0.2}
+          enablePost
+          bloomIntensity={0.3}
+          chromaticAberration={0.001}
+          noiseIntensity={0.01}
+          scanDuration={4.0}
+          scanDelay={3.0}
+        />
+      </div>
+
+      {/* Content container centered on top */}
       <motion.div 
-        className="w-full mt-60 md:w-2/5 z-20 py-12 flex flex-col items-start justify-center"
+        className="w-full z-20 flex flex-col items-center justify-center text-center"
         initial={isDev ? "visible" : "hidden"}
         animate="visible"
         variants={containerVariants}
@@ -84,7 +101,7 @@ export default function HeroSection() {
         </motion.div>
         
         <motion.div 
-          className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-left text-white"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center text-white"
           variants={itemVariants}
         >
           I build beautiful 
@@ -93,7 +110,7 @@ export default function HeroSection() {
         </motion.div>
         
         <motion.div variants={itemVariants}>
-          <p className="text-xl md:text-2xl text-gray-300 mt-4 text-left">
+          <p className="text-xl md:text-2xl text-gray-300 mt-4 text-center">
             speaks fluent MERN, {" "}
             {isClient ? (
               <span className="inline-block min-h-[1.5em]">
@@ -116,26 +133,6 @@ export default function HeroSection() {
             )}
           </p>
         </motion.div>
-
-        {/* Three.js Scene below text */}
-        <motion.div
-          className="w-full h-[400px] mt-6 bg-black/30 rounded-lg overflow-hidden backdrop-blur-sm"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-        >
-          <ThreeScene className="w-full h-full" />
-        </motion.div>
-      </motion.div>
-      
-      {/* 3D scene container on the right with extended width */}
-      <motion.div 
-        className="w-full md:w-3/5 md:absolute md:right-[-5%] h-[500px] md:h-full z-10 mt-[-50px] md:mt-0 overflow-visible"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, delay: 0.5 }}
-      >
-        <SplineSceneBasic />
       </motion.div>
     </div>
   );
