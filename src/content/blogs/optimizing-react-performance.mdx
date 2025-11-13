@@ -1,0 +1,424 @@
+---
+title: "Optimizing Performance in React Applications"
+excerpt: "Tips and techniques for making your React apps blazingly fast"
+date: "2023-03-10"
+author: "Sajmo"
+imageUrl: "https://source.unsplash.com/random/800x600/?fast"
+tags: ["React", "Performance", "Optimization"]
+readTime: "10 min read"
+---
+
+## Introduction
+
+Performance optimization is crucial for delivering great user experiences. Slow apps frustrate users and hurt conversion rates. Studies show that even a 100ms delay can reduce conversion rates by 7%.
+
+In this comprehensive guide, we'll explore proven techniques to make your React apps lightning fast. We'll cover everything from code splitting to virtualization, with practical examples you can implement today.
+
+## Why Performance Matters
+
+Before diving into techniques, let's understand why performance is critical:
+
+- **User Experience** - Fast apps feel responsive and delightful
+- **SEO** - Google ranks faster sites higher
+- **Conversion Rates** - Speed directly impacts revenue
+- **Accessibility** - Slow apps exclude users on slower devices/networks
+- **Cost** - Efficient apps reduce server and bandwidth costs
+
+## 1. Code Splitting
+
+Split your bundle into smaller chunks that load on demand. This dramatically reduces initial load time.
+
+### Route-Based Code Splitting
+
+The most impactful optimization you can make:
+
+```typescript
+import { lazy, Suspense } from 'react';
+
+// Instead of regular import
+// import Dashboard from './Dashboard';
+
+// Use lazy loading
+const Dashboard = lazy(() => import('./Dashboard'));
+const Settings = lazy(() => import('./Settings'));
+const Profile = lazy(() => import('./Profile'));
+
+function App() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+**Impact:** Can reduce initial bundle size by 50-70%!
+
+### Component-Based Code Splitting
+
+Split heavy components that aren't immediately needed:
+
+```typescript
+// Heavy chart library only loads when needed
+const ChartComponent = lazy(() => import('./ChartComponent'));
+
+function Analytics() {
+  const [showChart, setShowChart] = useState(false);
+
+  return (
+    <div>
+      <button onClick={() => setShowChart(true)}>
+        Show Chart
+      </button>
+
+      {showChart && (
+        <Suspense fallback={<div>Loading chart...</div>}>
+          <ChartComponent data={data} />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+```
+
+## 2. Memoization
+
+Use React.memo, useMemo, and useCallback to prevent unnecessary re-renders.
+
+### React.memo
+
+Prevents component re-renders when props haven't changed:
+
+```typescript
+// Without memo - re-renders on every parent render
+function ExpensiveComponent({ data }) {
+  // Heavy computation
+  return <div>{/* render */}</div>;
+}
+
+// With memo - only re-renders when data changes
+export default React.memo(ExpensiveComponent);
+
+// With custom comparison
+export default React.memo(ExpensiveComponent, (prevProps, nextProps) => {
+  return prevProps.data.id === nextProps.data.id;
+});
+```
+
+### useMemo
+
+Memoizes expensive computations:
+
+```typescript
+function DataTable({ data, filters }) {
+  // Bad - recalculates on every render
+  const filteredData = data.filter(item =>
+    filters.every(f => f.check(item))
+  );
+
+  // Good - only recalculates when dependencies change
+  const filteredData = useMemo(() =>
+    data.filter(item =>
+      filters.every(f => f.check(item))
+    ),
+    [data, filters]
+  );
+
+  return <Table data={filteredData} />;
+}
+```
+
+### useCallback
+
+Memoizes function references to prevent child re-renders:
+
+```typescript
+function ParentComponent() {
+  // Bad - creates new function on every render
+  const handleClick = () => console.log('clicked');
+
+  // Good - same function reference across renders
+  const handleClick = useCallback(() => {
+    console.log('clicked');
+  }, []);
+
+  return <ChildComponent onClick={handleClick} />;
+}
+
+const ChildComponent = React.memo(({ onClick }) => {
+  return <button onClick={onClick}>Click me</button>;
+});
+```
+
+**Warning:** Don't over-optimize! Memoization has overhead. Profile first, optimize second.
+
+## 3. Virtual Scrolling
+
+For long lists, implement virtual scrolling to only render visible items.
+
+### Using react-window
+
+```typescript
+import { FixedSizeList } from 'react-window';
+
+function VirtualizedList({ items }) {
+  const Row = ({ index, style }) => (
+    <div style={style}>
+      {items[index].name}
+    </div>
+  );
+
+  return (
+    <FixedSizeList
+      height={600}
+      itemCount={items.length}
+      itemSize={50}
+      width="100%"
+    >
+      {Row}
+    </FixedSizeList>
+  );
+}
+```
+
+**Impact:** Renders 10,000 items as fast as 100 items!
+
+### Comparison
+
+```typescript
+// Regular rendering - renders ALL items
+function RegularList({ items }) {
+  return (
+    <div>
+      {items.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  );
+}
+// 10,000 items = 10,000 DOM nodes ❌
+
+// Virtual scrolling - renders only visible items
+function VirtualList({ items }) {
+  // Only renders ~20 items at a time
+  // Even with 1 million items
+  return <FixedSizeList {...props} />;
+}
+// 10,000 items = ~20 DOM nodes ✅
+```
+
+## 4. Image Optimization
+
+Images are often the heaviest assets. Optimize them properly.
+
+### Using next/image
+
+Next.js provides automatic image optimization:
+
+```typescript
+import Image from 'next/image';
+
+// Bad - unoptimized image
+<img src="/hero.jpg" alt="Hero" />
+
+// Good - optimized with next/image
+<Image
+  src="/hero.jpg"
+  alt="Hero"
+  width={1200}
+  height={600}
+  priority // Load immediately for above-fold images
+  placeholder="blur" // Show blur while loading
+  blurDataURL="data:image/..." // Blur placeholder
+/>
+
+// For large images below the fold
+<Image
+  src="/large-image.jpg"
+  alt="Large"
+  width={800}
+  height={600}
+  loading="lazy" // Lazy load
+  quality={85} // Reduce quality slightly
+/>
+```
+
+**Features:**
+- Automatic WebP/AVIF conversion
+- Responsive images
+- Lazy loading
+- Blur placeholders
+
+### Responsive Images
+
+```typescript
+<Image
+  src="/hero.jpg"
+  alt="Hero"
+  fill
+  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  style={{ objectFit: 'cover' }}
+/>
+```
+
+## 5. Bundle Analysis
+
+Regularly analyze your bundle to identify and remove bloat.
+
+### Setup webpack-bundle-analyzer
+
+```bash
+npm install --save-dev @next/bundle-analyzer
+```
+
+```javascript
+// next.config.js
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
+module.exports = withBundleAnalyzer({
+  // your config
+});
+```
+
+Run analysis:
+```bash
+ANALYZE=true npm run build
+```
+
+### Common Issues to Look For
+
+1. **Duplicate dependencies** - Same library bundled multiple times
+2. **Unused code** - Tree-shaking not working
+3. **Heavy libraries** - moment.js (use date-fns instead), lodash (use lodash-es)
+4. **Polyfills** - Remove if targeting modern browsers
+
+## 6. State Management Optimization
+
+Inefficient state management causes unnecessary re-renders.
+
+### Atomic State Updates
+
+```typescript
+// Bad - updating entire object
+const [user, setUser] = useState({ name: '', email: '', age: 0 });
+setUser({ ...user, name: 'John' }); // Causes re-render even if email/age unchanged
+
+// Good - separate state for independent values
+const [name, setName] = useState('');
+const [email, setEmail] = useState('');
+const [age, setAge] = useState(0);
+```
+
+### Context Optimization
+
+```typescript
+// Bad - single context for everything
+const AppContext = createContext({ user, theme, settings, ... });
+// Any change re-renders all consumers
+
+// Good - separate contexts
+const UserContext = createContext(user);
+const ThemeContext = createContext(theme);
+const SettingsContext = createContext(settings);
+// Only relevant consumers re-render
+```
+
+## 7. Measuring Performance
+
+You can't optimize what you don't measure.
+
+### React DevTools Profiler
+
+```typescript
+import { Profiler } from 'react';
+
+function onRenderCallback(
+  id, // Component being profiled
+  phase, // "mount" or "update"
+  actualDuration, // Time spent rendering
+  baseDuration, // Estimated time without memoization
+  startTime, // When render started
+  commitTime // When React committed the update
+) {
+  console.log({ id, phase, actualDuration });
+}
+
+<Profiler id="Navigation" onRender={onRenderCallback}>
+  <Navigation />
+</Profiler>
+```
+
+### Web Vitals
+
+Monitor Core Web Vitals:
+
+```typescript
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+
+function sendToAnalytics(metric) {
+  // Send to your analytics service
+  console.log(metric);
+}
+
+getCLS(sendToAnalytics);
+getFID(sendToAnalytics);
+getFCP(sendToAnalytics);
+getLCP(sendToAnalytics);
+getTTFB(sendToAnalytics);
+```
+
+### Lighthouse
+
+Run Lighthouse audits regularly:
+
+```bash
+npm install -g lighthouse
+lighthouse https://your-site.com --view
+```
+
+## Performance Checklist
+
+Use this checklist for every React project:
+
+- [ ] Implement code splitting for routes
+- [ ] Use React.memo for expensive components
+- [ ] Optimize images with next/image or similar
+- [ ] Implement virtual scrolling for long lists
+- [ ] Split contexts to minimize re-renders
+- [ ] Use useMemo/useCallback appropriately
+- [ ] Analyze bundle size regularly
+- [ ] Monitor Web Vitals in production
+- [ ] Use production builds for testing
+- [ ] Enable gzip/brotli compression
+- [ ] Implement service workers for caching
+- [ ] Optimize font loading
+- [ ] Minimize JavaScript execution time
+- [ ] Remove unused dependencies
+
+## Conclusion
+
+Performance optimization is an ongoing process, not a one-time task. The techniques we covered:
+
+1. **Code Splitting** - Reduce initial bundle size
+2. **Memoization** - Prevent unnecessary re-renders
+3. **Virtual Scrolling** - Handle large lists efficiently
+4. **Image Optimization** - Reduce largest contentful paint
+5. **Bundle Analysis** - Identify and remove bloat
+6. **State Management** - Minimize re-renders
+7. **Measurement** - Track and improve over time
+
+Remember:
+- Profile before optimizing
+- Focus on the biggest wins first
+- Measure the impact of changes
+- Don't over-optimize
+
+A fast app is a successful app. Start with these techniques today and watch your metrics improve!
+
+Happy optimizing! 🚀

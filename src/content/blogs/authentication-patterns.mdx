@@ -1,0 +1,259 @@
+---
+title: "Authentication Patterns in Modern Web Apps"
+excerpt: "Explore different authentication strategies and when to use them in your applications"
+date: "2023-04-22"
+author: "Sajmo"
+imageUrl: "https://source.unsplash.com/random/800x600/?security"
+tags: ["Security", "Auth", "Best Practices"]
+readTime: "6 min read"
+---
+
+## Introduction
+
+Authentication is a critical part of any web application. Choosing the right authentication pattern can make the difference between a secure, user-friendly app and a security nightmare.
+
+In this comprehensive guide, we'll explore the most common authentication patterns, their trade-offs, and when to use each one. Whether you're building a simple blog or a complex SaaS platform, understanding these patterns is essential.
+
+## Common Authentication Patterns
+
+### 1. Session-based Authentication
+
+Traditional approach using server-side sessions. The server creates a session after successful login and stores a session ID in a cookie.
+
+**How it works:**
+1. User submits credentials
+2. Server validates and creates a session
+3. Session ID stored in HTTP-only cookie
+4. Subsequent requests include cookie
+5. Server looks up session to authenticate
+
+**Pros:**
+- Simple to implement
+- Sessions can be invalidated instantly
+- No sensitive data on client
+- Better for traditional server-rendered apps
+
+**Cons:**
+- Requires server-side storage
+- Challenging to scale horizontally
+- CORS complications with cross-domain requests
+- Not ideal for mobile apps
+
+**When to use:** Traditional web apps, high security requirements, when you need instant session revocation.
+
+```javascript
+// Example with Express and express-session
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await validateCredentials(email, password);
+
+  if (user) {
+    req.session.userId = user.id;
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
+
+app.get('/profile', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  res.json({ userId: req.session.userId });
+});
+```
+
+### 2. JWT (JSON Web Tokens)
+
+Stateless authentication where tokens contain encoded user information and can be verified without database lookups.
+
+**How it works:**
+1. User submits credentials
+2. Server validates and creates signed JWT
+3. Client stores JWT (localStorage/cookie)
+4. JWT sent with each request
+5. Server verifies signature
+
+**Pros:**
+- Stateless - no server storage needed
+- Perfect for APIs and microservices
+- Works great across domains
+- Mobile-friendly
+- Can include custom claims
+
+**Cons:**
+- Cannot invalidate before expiry
+- Tokens can be large
+- Need refresh token strategy
+- Vulnerable if not implemented correctly
+
+**When to use:** SPAs, mobile apps, microservices, distributed systems, API authentication.
+
+```typescript
+// Example with Next.js and jose
+import { SignJWT, jwtVerify } from 'jose';
+
+export async function createToken(userId: string) {
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+  return await new SignJWT({ userId })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('1h')
+    .setIssuedAt()
+    .sign(secret);
+}
+
+export async function verifyToken(token: string) {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return payload;
+  } catch {
+    return null;
+  }
+}
+```
+
+### 3. OAuth 2.0 & OpenID Connect
+
+Industry-standard protocols for delegated authorization. Perfect for "Sign in with Google/GitHub" scenarios.
+
+**How it works:**
+1. User clicks "Sign in with Google"
+2. Redirected to OAuth provider
+3. User authorizes your app
+4. Provider redirects back with code
+5. Exchange code for tokens
+6. Use tokens to access user data
+
+**Pros:**
+- No password management
+- Trusted providers
+- Standardized flow
+- Rich user data available
+- Better UX (one-click login)
+
+**Cons:**
+- Complex implementation
+- Dependent on third party
+- User must have provider account
+- Privacy considerations
+
+**When to use:** Third-party integrations, social login, when you want to avoid password management.
+
+```typescript
+// Example with NextAuth.js
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
+
+export default NextAuth({
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    }),
+  ],
+  callbacks: {
+    async session({ session, token }) {
+      session.userId = token.sub;
+      return session;
+    },
+  },
+});
+```
+
+## Hybrid Approaches
+
+Many modern apps combine multiple patterns:
+
+### JWT + Refresh Tokens
+
+Use short-lived JWTs (15 minutes) with long-lived refresh tokens:
+- Access token for API requests
+- Refresh token to get new access tokens
+- Refresh tokens can be revoked
+
+### Session + JWT
+
+Use sessions for web, JWT for mobile:
+- Web users get session cookies
+- Mobile apps get JWTs
+- Same backend logic for both
+
+## Security Best Practices
+
+Regardless of which pattern you choose, follow these security principles:
+
+### 1. Always Use HTTPS
+Never send credentials or tokens over unencrypted connections.
+
+### 2. Implement Rate Limiting
+Prevent brute force attacks on login endpoints:
+
+```typescript
+// Example rate limiting
+const loginAttempts = new Map();
+
+export function checkRateLimit(ip: string): boolean {
+  const attempts = loginAttempts.get(ip) || 0;
+
+  if (attempts >= 5) {
+    return false; // Too many attempts
+  }
+
+  loginAttempts.set(ip, attempts + 1);
+  setTimeout(() => loginAttempts.delete(ip), 15 * 60 * 1000); // Reset after 15 min
+
+  return true;
+}
+```
+
+### 3. Secure Cookie Flags
+When using cookies, set proper flags:
+
+```javascript
+res.cookie('session', sessionId, {
+  httpOnly: true,    // Prevents JavaScript access
+  secure: true,      // HTTPS only
+  sameSite: 'strict', // CSRF protection
+  maxAge: 3600000    // 1 hour
+});
+```
+
+### 4. Keep Tokens Short-Lived
+JWTs should expire quickly (15-60 minutes). Use refresh tokens for longevity.
+
+### 5. Validate Everything
+Never trust user input. Validate on both client and server.
+
+### 6. Use Strong Password Policies
+Enforce minimum length, complexity, and check against breached password databases.
+
+## Decision Matrix
+
+| Requirement | Session | JWT | OAuth |
+|------------|---------|-----|-------|
+| Simple web app | ✅ | ❌ | ❌ |
+| SPA/React app | ❌ | ✅ | ✅ |
+| Mobile app | ❌ | ✅ | ✅ |
+| Microservices | ❌ | ✅ | ✅ |
+| Social login | ❌ | ❌ | ✅ |
+| Instant revocation | ✅ | ❌ | ⚠️ |
+| Horizontal scaling | ⚠️ | ✅ | ✅ |
+
+## Conclusion
+
+There's no one-size-fits-all authentication solution. Choose based on your specific requirements:
+
+- **Session-based** for traditional web apps with high security needs
+- **JWT** for modern SPAs, APIs, and distributed systems
+- **OAuth** for third-party integrations and social login
+
+Remember: security is not a feature, it's a requirement. Always follow best practices, keep dependencies updated, and stay informed about new vulnerabilities.
+
+Start with the simplest solution that meets your needs, and iterate as your requirements grow. Most importantly, test your authentication thoroughly and consider security audits for production systems.

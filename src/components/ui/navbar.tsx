@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
@@ -12,6 +13,8 @@ const menuItems = [
 ];
 
 export function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("#hero");
   const [hoverItem, setHoverItem] = useState<string | null>(null);
@@ -43,11 +46,21 @@ export function Navbar() {
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
-    const targetId = href.replace('#', '');
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setActiveSection(href);
+
+    // Check if we're on the homepage
+    const isHomePage = pathname === '/';
+
+    if (!isHomePage) {
+      // If we're on a different page (like /blog/post), navigate to home with hash
+      router.push(`/${href}`);
+    } else {
+      // If we're already on homepage, smooth scroll to section
+      const targetId = href.replace('#', '');
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        setActiveSection(href);
+      }
     }
   };
 
@@ -133,15 +146,22 @@ export function Navbar() {
           
           {/* Content container */}
           <div className="relative z-10 flex items-center justify-between w-full px-3 md:px-4 py-1.5 md:py-2 transition-all duration-500">
-            <div className="transition-all duration-500" 
-                style={{ 
+            <div className="transition-all duration-500"
+                style={{
                   transform: dynamicStyles.logo.transform,
                   marginRight: dynamicStyles.logo.marginRight
                 }}>
-              <a 
-                href="#hero"
-                onClick={(e) => scrollToSection(e, "#hero")}
-                className="font-bold text-white transition-all duration-300"
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (pathname !== '/') {
+                    router.push('/');
+                  } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                className="font-bold text-white transition-all duration-300 cursor-pointer"
                 style={{ fontSize: dynamicStyles.logo.fontSize }}
               >
                 SAJMO

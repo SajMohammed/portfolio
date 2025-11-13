@@ -1,0 +1,181 @@
+---
+title: "Building a Real-time Dashboard with Next.js"
+excerpt: "Learn how to create a real-time dashboard using Next.js, WebSockets, and Redis"
+date: "2023-05-15"
+author: "Sajmo"
+imageUrl: "https://source.unsplash.com/random/800x600/?code"
+tags: ["Next.js", "WebSockets", "Redis"]
+readTime: "8 min read"
+---
+
+## Introduction
+
+Building real-time dashboards is essential for modern web applications. In this post, we'll explore how to create a performant real-time dashboard using Next.js 14, WebSockets, and Redis.
+
+Real-time data visualization helps users make quick decisions based on up-to-date information. Whether you're monitoring server metrics, tracking analytics, or displaying live user activity, this guide will show you how to build it.
+
+## Why Real-time?
+
+Real-time updates provide immediate feedback to users, improving user experience and engagement. Whether you're building:
+
+- **Analytics dashboards** - Track user behavior as it happens
+- **Monitoring systems** - Alert on anomalies instantly
+- **Collaborative tools** - See changes from other users live
+- **Trading platforms** - React to market changes in milliseconds
+
+The ability to push updates to clients without polling is crucial for performance and user experience.
+
+## The Tech Stack
+
+Here's what we'll be using and why:
+
+- **Next.js 14** - For the frontend framework and API routes with built-in optimization
+- **WebSockets** - For bidirectional real-time communication between client and server
+- **Socket.io** - Abstraction over WebSockets with fallbacks and reconnection logic
+- **Redis** - For pub/sub messaging pattern and caching layer
+- **React Query** - For data synchronization and caching on the client
+
+## Architecture Overview
+
+Our real-time dashboard will use the following architecture:
+
+1. **Client connects** to the Next.js server via WebSocket
+2. **Server subscribes** to Redis pub/sub channels
+3. **Data updates** are published to Redis channels
+4. **Redis notifies** all subscribed servers
+5. **Servers push** updates to connected clients via WebSockets
+
+This architecture scales horizontally - you can run multiple Next.js instances, and Redis will ensure all servers receive updates.
+
+## Implementation
+
+### Setting Up WebSockets
+
+First, let's set up our WebSocket server using Socket.io:
+
+```javascript
+// pages/api/socket.js
+import { Server } from 'socket.io';
+import { createClient } from 'redis';
+
+export default async function handler(req, res) {
+  if (res.socket.server.io) {
+    res.end();
+    return;
+  }
+
+  const io = new Server(res.socket.server);
+  res.socket.server.io = io;
+
+  // Redis client for pub/sub
+  const redis = createClient({
+    url: process.env.REDIS_URL
+  });
+  await redis.connect();
+
+  io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    socket.on('subscribe', async (channel) => {
+      socket.join(channel);
+
+      // Subscribe to Redis channel
+      await redis.subscribe(channel, (message) => {
+        io.to(channel).emit('update', JSON.parse(message));
+      });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+    });
+  });
+
+  res.end();
+}
+```
+
+### Client-Side Connection
+
+Now let's connect from the client:
+
+```typescript
+// hooks/useRealtimeData.ts
+import { useEffect, useState } from 'react';
+import io from 'socket.io-client';
+
+export function useRealtimeData(channel: string) {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    // Initialize socket connection
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket');
+      socket.emit('subscribe', channel);
+    });
+
+    socket.on('update', (newData) => {
+      setData(newData);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [channel]);
+
+  return data;
+}
+```
+
+### Dashboard Component
+
+Finally, let's create a dashboard component that uses real-time data:
+
+```typescript
+// components/Dashboard.tsx
+import { useRealtimeData } from '@/hooks/useRealtimeData';
+
+export function Dashboard() {
+  const metrics = useRealtimeData('metrics');
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <MetricCard
+        title="Active Users"
+        value={metrics?.activeUsers || 0}
+      />
+      <MetricCard
+        title="Requests/sec"
+        value={metrics?.requestsPerSecond || 0}
+      />
+      <MetricCard
+        title="Response Time"
+        value={`${metrics?.avgResponseTime || 0}ms`}
+      />
+    </div>
+  );
+}
+```
+
+## Performance Considerations
+
+When building real-time dashboards, keep these optimizations in mind:
+
+1. **Throttle updates** - Don't send updates more often than the UI can render (typically 60fps max)
+2. **Use binary protocols** - Consider MessagePack or Protocol Buffers for large data
+3. **Implement backpressure** - Don't overwhelm slow clients
+4. **Cache aggressively** - Use Redis to cache computed metrics
+5. **Monitor memory** - WebSocket connections can consume significant memory at scale
+
+## Conclusion
+
+Real-time dashboards enhance user experience significantly. With Next.js, WebSockets, and Redis, you can build scalable real-time applications that handle thousands of concurrent connections.
+
+The key takeaways:
+- WebSockets provide efficient bidirectional communication
+- Redis pub/sub enables horizontal scaling
+- Proper error handling and reconnection logic are crucial
+- Performance optimizations are necessary at scale
+
+Start small, measure everything, and scale as needed. Happy building!

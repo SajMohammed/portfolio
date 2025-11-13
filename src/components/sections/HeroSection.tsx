@@ -11,8 +11,13 @@ export default function HeroSection() {
   const [isClient, setIsClient] = useState(false);
   const [textIndex, setTextIndex] = useState(0);
   const textVariants = [
-    "dreams in cloud architectures",
-    "turns complex problems into elegant solutions"
+    "Dreams in cloud architectures",
+    "Turns complex problems into elegant solutions",
+    "Builds products that are user-friendly, scalable, and efficient",
+    "Codes in components, thinks in microservices",
+    "Dreams in algorithms, wakes up with solutions",
+    "Architects systems that scale", 
+    "Writes code that's modular, readable, and maintainable",
   ];
 
   useEffect(() => {
@@ -104,14 +109,11 @@ export default function HeroSection() {
           className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center text-white"
           variants={itemVariants}
         >
-          I build beautiful 
-          <br className="hidden sm:block" />
-          and powerful products
+          I build beautiful and powerful products
         </motion.div>
         
         <motion.div variants={itemVariants}>
           <p className="text-xl md:text-2xl text-gray-300 mt-4 text-center">
-            speaks fluent MERN, {" "}
             {isClient ? (
               <span className="inline-block min-h-[1.5em]">
                 <AnimatePresence mode="wait">
