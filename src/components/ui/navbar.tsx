@@ -67,23 +67,25 @@ export function Navbar() {
   // Calculate dynamic styles based on scroll progress
   const dynamicStyles = useMemo(() => {
     const isAtTop = scrollProgress < 0.1;
-    
+    // Use fixed sizing (always minimized)
+    const sizeProgress = 1;
+
     return {
       container: {
-        padding: `${4 + (1 - scrollProgress) * 1.5}px ${3 + 6 * (1 - scrollProgress)}px`, // Reduced padding
-        maxWidth: `calc(100% - ${scrollProgress * 12}px)`, // Reduced side margins
-        marginLeft: `${scrollProgress * 6}px`,
-        marginRight: `${scrollProgress * 6}px`,
+        padding: `${4 + (1 - sizeProgress) * 1.5}px ${3 + 6 * (1 - sizeProgress)}px`, // Fixed minimized padding
+        maxWidth: `calc(100% - ${sizeProgress * 12}px)`, // Fixed minimized side margins
+        marginLeft: `${sizeProgress * 6}px`,
+        marginRight: `${sizeProgress * 6}px`,
         marginTop: '0.1rem',
         marginBottom: '0',
       },
       navbar: {
-        maxWidth: scrollProgress < 0.5 ? '100%' : '44rem', // Reduced from 48rem to 44rem
-        marginLeft: scrollProgress < 0.5 ? '0' : 'auto',
-        marginRight: scrollProgress < 0.5 ? '0' : 'auto',
+        maxWidth: '82rem', // Fixed minimized width
+        marginLeft: 'auto',
+        marginRight: 'auto',
         marginTop: '0',
         marginBottom: '0',
-        background: isAtTop 
+        background: isAtTop
           ? 'rgba(255, 255, 255, 0.03)' // Almost invisible when not scrolling
           : `rgba(0, 0, 0, ${0.4 + scrollProgress * 0.2})`, // Darker when scrolling
         backdropFilter: `blur(${isAtTop ? 3 : 5 + scrollProgress * 7}px)`, // Minimal blur at top
@@ -98,19 +100,19 @@ export function Navbar() {
         transition: 'all 0.4s ease',
       },
       logo: {
-        fontSize: `${1.3 - scrollProgress * 0.2}rem`, // Reduced base font size from 1.5 to 1.3
-        transform: `translateX(${scrollProgress * 25}%)`, // Reduced from 30% to 25%
-        marginRight: `${scrollProgress * 1}rem`, // Reduced from 1.5rem to 1rem
+        fontSize: `${1.3 - sizeProgress * 0.2}rem`, // Fixed minimized font size
+        transform: `translateX(${sizeProgress * 25}%)`, // Fixed minimized position
+        marginRight: `${sizeProgress * 1}rem`, // Fixed minimized margin
       },
       menuContainer: {
-        transform: `translateX(${-scrollProgress * 25}%)`, // Reduced from -30% to -25%
-        marginLeft: `${scrollProgress * 1}rem`, // Reduced from 1.5rem to 1rem
+        transform: `translateX(${-sizeProgress * 25}%)`, // Fixed minimized position
+        marginLeft: `${sizeProgress * 1}rem`, // Fixed minimized margin
       },
       menuGap: {
-        gap: `${0.3 + scrollProgress * 0.6}rem`, // Reduced base gap from 0.5 to 0.3
+        gap: `${0.3 + sizeProgress * 0.6}rem`, // Fixed minimized gap
       },
       gradientOpacity: {
-        opacity: scrollProgress * 0.8, // Gradient only appears when scrolling
+        opacity: scrollProgress * 0.8, // Gradient still responds to scroll
       },
       glassHighlight: {
         opacity: isAtTop ? 0.2 : 1 - scrollProgress * 0.7,
